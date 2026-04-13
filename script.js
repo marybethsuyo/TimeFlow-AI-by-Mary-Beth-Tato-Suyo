@@ -1,11 +1,12 @@
 /**
- * TimeFlow AI - Logic Engine
- * Features: Direct Search, Continuous Voice, Female TTS, Gmail Account Chooser, Dynamic Calendar
+ * TimeFlow AI - Logic Engine (v2.0)
+ * Features: Interactive Calendar, Direct Search, Voice TTS, Gmail Backup
  */
 
 // --- GLOBAL STATE ---
 let recognition;
 let isRecording = false;
+let currentCalDate = new Date(); // Stores the month being viewed
 
 // --- STARTUP ---
 window.onload = () => { 
@@ -13,16 +14,14 @@ window.onload = () => {
     fetchWeather();
 };
 
-// Initialize Lucide icons
 if (window.lucide) {
     lucide.createIcons();
 }
 
-// --- 1. ASK AI SEARCH (Direct to Web) ---
+// --- 1. ASK AI SEARCH ---
 function handleAISearch() {
     const input = document.getElementById('aiSearch');
     const query = input.value.trim();
-    
     if (!query) return;
 
     const vp = document.getElementById('viewport');
@@ -45,7 +44,7 @@ function handleAISearch() {
     input.value = "";
 }
 
-// --- 2. CONTINUOUS VOICE & FEMALE SPEECH ---
+// --- 2. CONTINUOUS VOICE & SPEECH ---
 function startDictation(targetId) {
     const micIcon = document.getElementById('mic-' + targetId);
     const target = document.getElementById(targetId);
@@ -90,13 +89,12 @@ function speakText(targetId) {
     if (!text) return;
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
-    const femaleVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Google US English') || v.name.includes('Zira') || v.name.includes('Samantha'));
+    const femaleVoice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Zira') || v.name.includes('Samantha'));
     if (femaleVoice) utterance.voice = femaleVoice;
-    utterance.pitch = 1.1;
     window.speechSynthesis.speak(utterance);
 }
 
-// --- 3. GMAIL & BACKUP LOGIC ---
+// --- 3. EMAIL LOGIC ---
 function toggleEmailMenu() {
     const menu = document.getElementById('emailDropdown');
     if (menu) menu.classList.toggle('hidden');
@@ -121,7 +119,13 @@ function sendToGmail(type) {
     }
 }
 
-// --- 4. NAVIGATION & RENDERERS ---
+// --- 4. INTERACTIVE CALENDAR LOGIC ---
+function changeMonth(dir) {
+    currentCalDate.setMonth(currentCalDate.getMonth() + dir);
+    showPage('calendar');
+}
+
+// --- 5. NAVIGATION & RENDERERS ---
 function showPage(page) {
     const vp = document.getElementById('viewport');
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('tab-active'));
@@ -134,22 +138,19 @@ function showPage(page) {
                 <div class="bg-white p-8 rounded-3xl border shadow-sm">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="font-bold text-xl text-slate-800">Quick Capture</h3>
-                        <div class="flex gap-2 relative">
+                        <div class="flex gap-2">
                             <button onclick="startDictation('quickNotes')" class="p-2 hover:bg-slate-100 rounded-full text-slate-500"><i data-lucide="mic" id="mic-quickNotes"></i></button>
                             <button onclick="speakText('quickNotes')" class="p-2 hover:bg-slate-100 rounded-full text-slate-500"><i data-lucide="volume-2"></i></button>
-                            <div class="relative inline-block text-left">
+                            <div class="relative">
                                 <button onclick="toggleEmailMenu()" class="p-2 hover:bg-slate-100 rounded-full text-slate-500"><i data-lucide="mail"></i></button>
-                                <div id="emailDropdown" class="hidden absolute right-0 mt-2 w-56 origin-top-right bg-white border border-slate-200 rounded-2xl shadow-xl z-50">
-                                    <div class="py-2 px-2 space-y-1">
-                                        <button onclick="sendToGmail('draft')" class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-indigo-50 rounded-xl flex items-center gap-2"><i data-lucide="file-text" class="w-3 h-3"></i> Save as Draft</button>
-                                        <button onclick="sendToGmail('self')" class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-indigo-50 rounded-xl flex items-center gap-2"><i data-lucide="user" class="w-3 h-3"></i> Send to My Gmail</button>
-                                        <button onclick="sendToGmail('choose')" class="w-full text-left px-4 py-2 text-[10px] text-slate-400 hover:bg-slate-50 rounded-xl">Switch Account...</button>
-                                    </div>
+                                <div id="emailDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white border rounded-2xl shadow-xl z-50 py-2 px-2">
+                                    <button onclick="sendToGmail('draft')" class="w-full text-left px-4 py-2 text-xs hover:bg-indigo-50 rounded-xl flex items-center gap-2"><i data-lucide="file-text" class="w-3 h-3"></i> Save as Draft</button>
+                                    <button onclick="sendToGmail('self')" class="w-full text-left px-4 py-2 text-xs hover:bg-indigo-50 rounded-xl flex items-center gap-2"><i data-lucide="user" class="w-3 h-3"></i> Send to My Gmail</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <textarea id="quickNotes" oninput="saveNotes()" class="w-full h-96 p-6 bg-slate-50 border-none rounded-2xl text-base outline-none leading-relaxed" placeholder="Start your notes..."></textarea>
+                    <textarea id="quickNotes" oninput="saveNotes()" class="w-full h-96 p-6 bg-slate-50 border-none rounded-2xl text-base outline-none" placeholder="Start your notes..."></textarea>
                 </div>
             </div>`;
         loadNotes();
@@ -160,7 +161,7 @@ function showPage(page) {
                 <div class="bg-white p-8 rounded-3xl border shadow-sm">
                     <h2 class="text-2xl font-bold mb-6 text-slate-800">Tasks</h2>
                     <div class="flex gap-3 mb-8">
-                        <input type="text" id="taskInput" onkeypress="if(event.key==='Enter')addTask()" class="flex-1 p-4 bg-slate-50 rounded-2xl outline-none text-sm" placeholder="Add task...">
+                        <input type="text" id="taskInput" onkeypress="if(event.key==='Enter')addTask()" class="flex-1 p-4 bg-slate-50 rounded-2xl outline-none" placeholder="Add task...">
                         <button onclick="addTask()" class="bg-indigo-600 text-white px-6 py-2 rounded-2xl font-bold hover:bg-indigo-700">+ ADD</button>
                     </div>
                     <div id="taskList" class="space-y-3"></div>
@@ -169,10 +170,9 @@ function showPage(page) {
         renderTasks();
     }
     else if (page === 'calendar') {
-        const now = new Date();
-        const monthName = now.toLocaleString('default', { month: 'long' });
-        const year = now.getFullYear();
-        const daysInMonth = new Date(year, now.getMonth() + 1, 0).getDate();
+        const monthName = currentCalDate.toLocaleString('default', { month: 'long' });
+        const year = currentCalDate.getFullYear();
+        const daysInMonth = new Date(year, currentCalDate.getMonth() + 1, 0).getDate();
         
         const days = Array.from({length: daysInMonth}, (_, i) => `
             <div class="h-24 border border-slate-100 p-2 rounded-xl hover:bg-indigo-50 cursor-pointer group">
@@ -181,7 +181,13 @@ function showPage(page) {
             
         vp.innerHTML = `
             <div class="bg-white p-8 rounded-3xl border shadow-sm">
-                <h2 class="text-2xl font-bold mb-6 text-slate-800">${monthName} ${year}</h2>
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">${monthName} ${year}</h2>
+                    <div class="flex gap-2">
+                        <button onclick="changeMonth(-1)" class="p-2 hover:bg-slate-100 rounded-lg border text-slate-600"><i data-lucide="chevron-left"></i></button>
+                        <button onclick="changeMonth(1)" class="p-2 hover:bg-slate-100 rounded-lg border text-slate-600"><i data-lucide="chevron-right"></i></button>
+                    </div>
+                </div>
                 <div class="grid grid-cols-7 gap-2">${days}</div>
             </div>`;
     }
@@ -190,14 +196,14 @@ function showPage(page) {
             <div class="max-w-xs mx-auto bg-white p-6 rounded-3xl border shadow-xl">
                 <input type="text" id="calcDisplay" class="w-full text-right text-2xl p-4 bg-slate-100 rounded-xl mb-4" readonly placeholder="0">
                 <div class="grid grid-cols-4 gap-2">
-                    ${['7','8','9','/','4','5','6','*','1','2','3','-','0','C','=','+'].map(btn => `<button onclick="calcInput('${btn}')" class="p-4 bg-slate-50 hover:bg-indigo-500 rounded-xl font-bold text-slate-700">${btn}</button>`).join('')}
+                    ${['7','8','9','/','4','5','6','*','1','2','3','-','0','C','=','+'].map(btn => `<button onclick="calcInput('${btn}')" class="p-4 bg-slate-50 hover:bg-indigo-500 hover:text-white rounded-xl font-bold text-slate-700 transition-colors">${btn}</button>`).join('')}
                 </div>
             </div>`;
     }
     lucide.createIcons();
 }
 
-// --- 5. DATA PERSISTENCE ---
+// --- 6. DATA PERSISTENCE ---
 function saveNotes() { 
     localStorage.setItem('tf_notes', document.getElementById('quickNotes').value); 
     showSaved(); 
@@ -216,7 +222,6 @@ function addTask() {
     localStorage.setItem('tf_tasks', JSON.stringify(tasks));
     input.value = '';
     renderTasks();
-    showSaved();
 }
 
 function renderTasks() {
@@ -237,16 +242,9 @@ function deleteTask(id) {
     renderTasks();
 }
 
-// --- 6. UTILS ---
 function calcInput(val) {
     const d = document.getElementById('calcDisplay');
-    if(val === '=') {
-        try {
-            d.value = eval(d.value) || '0';
-        } catch {
-            d.value = "Error";
-        }
-    }
+    if(val === '=') { try { d.value = eval(d.value) || '0'; } catch { d.value = "Error"; } }
     else if(val === 'C') d.value = '';
     else d.value += val;
 }
@@ -261,16 +259,11 @@ async function fetchWeather() {
             } catch (e) {
                 document.getElementById('current-temp').innerText = "PAVIA: 24°C SUNNY";
             }
-        }, () => { 
-            document.getElementById('current-temp').innerText = "PAVIA: 24°C SUNNY"; 
         });
     }
 }
 
 function showSaved() {
     const el = document.getElementById('save-indicator');
-    if(el) { 
-        el.style.opacity = '1'; 
-        setTimeout(() => el.style.opacity = '0', 1000); 
-    }
+    if(el) { el.style.opacity = '1'; setTimeout(() => el.style.opacity = '0', 1000); }
 }
