@@ -3,110 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TimeFlow AI - Mary Beth Tato-Suyo</title>
+    <title>TimeFlow AI | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root { --primary: #4f46e5; }
-        
-        .tab-active { 
-            background-color: #f5f3ff; 
-            color: #4f46e5; 
-            font-weight: 600; 
-            border-right: 4px solid #4f46e5; 
-        }
-
-        .voice-active { 
-            color: #ef4444 !important; 
-            animation: pulse 1.5s infinite; 
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        
-        .no-print { @media print { display: none; } }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        .tab-active { background-color: #e0e7ff; color: #4338ca; border-right: 4px solid #4338ca; }
+        .voice-active { color: #ef4444; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        #viewport::-webkit-scrollbar { width: 6px; }
+        #viewport::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 font-sans">
+<body class="h-screen flex overflow-hidden">
 
-    <div id="app" class="flex h-screen overflow-hidden">
-        
-        <aside class="w-64 bg-white border-r border-slate-200 flex flex-col no-print">
-            <div class="p-6 border-b">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                        <i data-lucide="brain"></i>
-                    </div>
-                    <div>
-                        <h1 class="font-bold text-lg leading-tight text-slate-800">TimeFlow AI</h1>
-                        <p class="text-[9px] text-slate-400 uppercase tracking-tighter font-semibold">Mary Beth Tato-Suyo</p>
-                    </div>
-                </div>
+    <aside class="w-64 bg-white border-r flex flex-col">
+        <div class="p-6">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-200">TF</div>
+                <h1 class="font-bold text-slate-800 tracking-tight">TimeFlow <span class="text-indigo-600">AI</span></h1>
             </div>
             
-            <nav class="flex-1 p-2 space-y-1 mt-4">
-                <button onclick="showPage('dashboard')" id="btn-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-all">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+            <nav class="space-y-1">
+                <button id="btn-dashboard" onclick="showPage('dashboard')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-50 transition-all">
+                    <i data-lucide="layout-grid" class="w-5 h-5"></i> Dashboard
                 </button>
-                <button onclick="showPage('calendar')" id="btn-calendar" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-all">
-                    <i data-lucide="calendar" class="w-5 h-5"></i> Calendar
-                </button>
-                <button onclick="showPage('tasks')" id="btn-tasks" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-all">
+                <button id="btn-tasks" onclick="showPage('tasks')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-50 transition-all">
                     <i data-lucide="check-square" class="w-5 h-5"></i> Tasks
                 </button>
-                <button onclick="showPage('calc')" id="btn-calc" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-all">
+                <button id="btn-calendar" onclick="showPage('calendar')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-50 transition-all">
+                    <i data-lucide="calendar" class="w-5 h-5"></i> Calendar
+                </button>
+                <button id="btn-calc" onclick="showPage('calc')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-50 transition-all">
                     <i data-lucide="calculator" class="w-5 h-5"></i> Calculator
                 </button>
             </nav>
+        </div>
 
-            <div class="p-4 border-t bg-slate-50">
-                <p class="text-[10px] text-slate-400 text-center font-medium uppercase tracking-widest">Pavia, PH • 2026</p>
+        <div class="mt-auto p-6 border-t">
+            <div class="bg-indigo-50 p-4 rounded-2xl">
+                <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Local Status</p>
+                <p id="current-temp" class="text-xs font-bold text-indigo-900">FETCHING WEATHER...</p>
             </div>
-        </aside>
+        </div>
+    </aside>
 
-        <main class="flex-1 flex flex-col overflow-hidden">
-            
-            <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-10">
-                <div class="flex items-center gap-6 flex-1">
-                    <div class="relative w-full max-w-xl">
-                        <i data-lucide="search" class="absolute left-4 top-3.5 w-4 h-4 text-slate-400"></i>
-                        <input type="text" id="aiSearch" 
-                               onkeypress="if(event.key==='Enter') handleAISearch()" 
-                               placeholder="AskAI search" 
-                               class="w-full pl-12 pr-4 py-3 bg-slate-100 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all outline-none">
-                    </div>
+    <main class="flex-1 flex flex-col min-w-0 bg-slate-50/50">
+        <header class="h-20 bg-white border-b px-8 flex items-center justify-between shrink-0">
+            <div class="flex-1 max-w-xl relative">
+                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                <input type="text" id="aiSearch" onkeypress="if(event.key==='Enter')handleAISearch()" 
+                       placeholder="Ask AI or search the web..." 
+                       class="w-full pl-12 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all">
+            </div>
 
-                    <div id="weather-widget" onclick="manualWeatherUpdate()" title="Click to refresh weather" 
-                         class="flex items-center gap-3 px-4 py-2 bg-sky-50 rounded-2xl border border-sky-100 text-sky-700 cursor-pointer hover:bg-sky-100 transition-all">
-                        <i data-lucide="cloud-sun" class="w-5 h-5"></i>
-                        <p id="current-temp" class="text-xs font-bold uppercase tracking-tight">Detecting...</p>
-                    </div>
-                </div>
+            <div class="flex items-center gap-4">
+                <span id="save-indicator" class="text-[10px] font-bold text-emerald-500 opacity-0 transition-opacity uppercase tracking-tighter">Changes Saved</span>
+                <div class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center text-white text-xs font-bold">MT</div>
+            </div>
+        </header>
 
-                <div class="flex items-center gap-4">
-                    <div id="save-indicator" class="text-[10px] text-emerald-500 font-bold opacity-0 transition-opacity duration-500 flex items-center gap-1">
-                        <i data-lucide="check-circle" class="w-3 h-3"></i> SAVED
-                    </div>
-                    <div class="w-8 h-8 rounded-full bg-indigo-100 border-2 border-white shadow-sm flex items-center justify-center text-indigo-600 font-bold text-xs">
-                        MT
-                    </div>
-                </div>
-            </header>
-
-            <div id="viewport" class="flex-1 overflow-y-auto p-8 bg-slate-50/50">
-                </div>
-
-        </main>
-    </div>
+        <div id="viewport" class="flex-1 p-8 overflow-y-auto">
+            </div>
+    </main>
 
     <script src="script.js"></script>
-
 </body>
 </html>
