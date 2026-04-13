@@ -1,6 +1,6 @@
 /**
  * TimeFlow AI - Logic Engine
- * Features: Direct Search, Continuous Voice, Female TTS, Gmail Account Chooser
+ * Features: Direct Search, Continuous Voice, Female TTS, Gmail Account Chooser, Dynamic Calendar
  */
 
 // --- GLOBAL STATE ---
@@ -13,7 +13,7 @@ window.onload = () => {
     fetchWeather();
 };
 
-// Initialize Lucide icons on start
+// Initialize Lucide icons
 if (window.lucide) {
     lucide.createIcons();
 }
@@ -26,7 +26,6 @@ function handleAISearch() {
     if (!query) return;
 
     const vp = document.getElementById('viewport');
-    // Using Bing for reliable in-app frame loading
     const searchUrl = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
     
     vp.innerHTML = `
@@ -91,7 +90,6 @@ function speakText(targetId) {
     if (!text) return;
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
-    // Prioritize Female-sounding voices
     const femaleVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Google US English') || v.name.includes('Zira') || v.name.includes('Samantha'));
     if (femaleVoice) utterance.voice = femaleVoice;
     utterance.pitch = 1.1;
@@ -171,8 +169,21 @@ function showPage(page) {
         renderTasks();
     }
     else if (page === 'calendar') {
-        const days = Array.from({length: 30}, (_, i) => `<div class="h-24 border border-slate-100 p-2 rounded-xl hover:bg-indigo-50 cursor-pointer"><span class="text-xs font-bold text-slate-400">${i+1}</span></div>`).join('');
-        vp.innerHTML = `<div class="bg-white p-8 rounded-3xl border shadow-sm"><h2 class="text-2xl font-bold mb-6">April 2026</h2><div class="grid grid-cols-7 gap-2">${days}</div></div>`;
+        const now = new Date();
+        const monthName = now.toLocaleString('default', { month: 'long' });
+        const year = now.getFullYear();
+        const daysInMonth = new Date(year, now.getMonth() + 1, 0).getDate();
+        
+        const days = Array.from({length: daysInMonth}, (_, i) => `
+            <div class="h-24 border border-slate-100 p-2 rounded-xl hover:bg-indigo-50 cursor-pointer group">
+                <span class="text-xs font-bold text-slate-400 group-hover:text-indigo-600">${i+1}</span>
+            </div>`).join('');
+            
+        vp.innerHTML = `
+            <div class="bg-white p-8 rounded-3xl border shadow-sm">
+                <h2 class="text-2xl font-bold mb-6 text-slate-800">${monthName} ${year}</h2>
+                <div class="grid grid-cols-7 gap-2">${days}</div>
+            </div>`;
     }
     else if (page === 'calc') {
         vp.innerHTML = `
@@ -240,22 +251,13 @@ function calcInput(val) {
     else d.value += val;
 }
 
-function manualWeatherUpdate() {
-    const city = prompt("Enter city:");
-    if (city) {
-        fetch(`https://wttr.in/${city}?format=%l:+%t+%C`)
-            .then(res => res.text())
-            .then(t => document.getElementById('current-temp').innerText = t);
-    }
-}
-
 async function fetchWeather() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (pos) => {
             try {
                 const res = await fetch(`https://wttr.in/${pos.coords.latitude},${pos.coords.longitude}?format=%l:+%t+%C`);
                 const text = await res.text();
-                document.getElementById('current-temp').innerText = text;
+                document.getElementById('current-temp').innerText = text.toUpperCase();
             } catch (e) {
                 document.getElementById('current-temp').innerText = "PAVIA: 24°C SUNNY";
             }
